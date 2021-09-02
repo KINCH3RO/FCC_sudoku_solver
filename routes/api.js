@@ -82,22 +82,24 @@ module.exports = function (app) {
 
 
       let puzzle = req.body.puzzle;
-
-
-      if (!puzzle) {
-        res.json({ error: "Required field(s) missing" })
+      if (puzzle==undefined) {
+        res.json({ error: 'Required field missing' })
+    
         return;
       }
       if (solver.validate(puzzle) !== true) {
         res.json(solver.validate(puzzle))
         return;
       }
+      let result =solver.solve(puzzle);
+      if(result==false){
+        res.json({ "error": "Puzzle cannot be solved" })
+        return;
+      }
+      res.json({ solution: result });
 
 
-      res.json({ solution: solver.solve(puzzle) });
-
-
-      res.end()
+      
 
     });
 };

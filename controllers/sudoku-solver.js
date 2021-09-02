@@ -15,9 +15,7 @@ function getCords(value) {
   return CordConverterObject[value];
 }
 
-String.prototype.replaceAt = function (index, replacement) {
-  return this.substr(0, index) + replacement + this.substr(index + replacement.length);
-}
+
 
 function getRegion(cord) {
   let regionCords = [];
@@ -52,8 +50,6 @@ function getRegion(cord) {
 }
 
 class SudokuSolver {
-
-
 
   validate(puzzleString) {
     let initialPuzzle = puzzleString;
@@ -167,46 +163,112 @@ class SudokuSolver {
 
   solve(puzzleString) {
     let board = [];
-    let solvedPuzzle = puzzleString;
-    let index = 0;
+    let initialBoard = [];
+    let result = false;
+    let backward = false;
 
     let numberToRow = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
     for (let i = 0; i < puzzleString.length; i += 9) {
       board.push(puzzleString.substring(i, i + 9).split(''));
+      initialBoard.push(puzzleString.substring(i, i + 9).split(''));
 
     }
 
-    for (let i = 0; i < board.length; i++) {
-      for (let j = 0; j < board[i].length; j++) {
-        let row = numberToRow[i];
-        let column = j + 1;
+    let row = 0;
+    let column = 0;
+    let counter = 0;
 
 
-        for (let k = 9; k > 0; k--) {
-          if (!this.checkColPlacement(solvedPuzzle, row, column, k) &&
-            !this.checkRowPlacement(solvedPuzzle, row, column, k) &&
-            !this.checkRegionPlacement(solvedPuzzle, row, column, k)
+    while (!result) {
+      if (row == 8 && column == 8) {
+        result = true;
+      }
+      counter++;
+      if (counter > 5000) {
+        return false;
+      }
+      let value = board[row][column]
+      if (board[row][column] == ".") {
+        for (let k = 1; k <= 9; k++) {
+
+          let reformedPuzzle = board.join("").replace(/,/g, "");
+          if (!this.checkColPlacement(reformedPuzzle, numberToRow[row], column + 1, k) &&
+            !this.checkRegionPlacement(reformedPuzzle, numberToRow[row], column + 1, k) &&
+            !this.checkRowPlacement(reformedPuzzle, numberToRow[row], column + 1, k)
           ) {
 
-            let x = solvedPuzzle.split("");
-            if (x[index] == ".") {
-              x[index] = k + "";
+            if (initialBoard[row][column] == ".") {
+              board[row][column] = k;
             }
 
-            solvedPuzzle = x.join("");
-            console.log(solvedPuzzle);
-            console.log("found value " + k);
+
             break;
           }
 
         }
-        index++;
+
+
+
+      } else if (board[row][column] != "." && initialBoard[row][column] == ".") {
+
+
+        if (board[row][column] == 9) {
+          board[row][column] = "."
+        } else {
+          for (let k = parseInt(board[row][column]) + 1; k <= 9; k++) {
+            let reformedPuzzle = board.join("").replace(/,/g, "");
+            if (!this.checkColPlacement(reformedPuzzle, numberToRow[row], column + 1, k) &&
+              !this.checkRegionPlacement(reformedPuzzle, numberToRow[row], column + 1, k) &&
+              !this.checkRowPlacement(reformedPuzzle, numberToRow[row], column + 1, k)
+            ) {
+              if (initialBoard[row][column] == ".") {
+                board[row][column] = k;
+              }
+              break;
+            } else {
+              board[row][column] = "."
+            }
+          }
+        }
+      }
+
+
+      if (initialBoard[row][column] != "." && backward) {
+        if (column > 0) {
+          column--
+        } else if (row > 0) {
+          row--;
+          column = 8;
+        }
+        backward = true;
+      } else if (board[row][column] == ".") {
+        if (column > 0) {
+          column--
+        } else if (row > 0) {
+          row--;
+          column = 8;
+        }
+        backward = true;
+
+      } else {
+        if (column < 8) {
+          column++;
+        } else if (row < 8) {
+          row++;
+          column = 0;
+        }
+        backward = false;
 
       }
 
     }
 
-    return solvedPuzzle;
+    let solvedpuzzle = board.join("").replace(/,/g, "")
+
+    return solvedpuzzle;
+
+
+
 
 
 
